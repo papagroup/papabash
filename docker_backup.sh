@@ -525,7 +525,6 @@ function gdrive_delete_expired_backup() {
 # ---------
 function send_backup_to_gdrive() {
 
-    __log "----------------------------------------------"
     __log "Sending backups to gDrive..."
     __log "Backup path           : $LOCAL_BACKUP_DESTINATION"
 
@@ -610,10 +609,10 @@ function send_backup_to_gdrive() {
         # Copy to temp folder
         cp -f $FILE_TO_BACKUP /tmp/$D_CONTAINER_NAME.$D_NAME.$TODAY.tar.gz
         # Upload temp file & delete if success
-        echo "[Gdrive] Uploading the file to the folder..."
+        __log "[Gdrive] Uploading the file to the folder..."
         
         GDRIVE_RESPONSE=$(gdrive upload --parent $GDRIVE_CONTAINER_DIR_ID --delete /tmp/$D_CONTAINER_NAME.$D_NAME.$TODAY.tar.gz)
-        echo "[Gdrive][Debug] GDRIVE_RESPONSE=$GDRIVE_RESPONSE"
+        __log "[Gdrive][Debug] $GDRIVE_RESPONSE"
 
         # Temp file deleted := upload successfully
         if [[ ! -f /tmp/$D_CONTAINER_NAME.$D_NAME.$TODAY.tar.gz ]]; then
@@ -632,7 +631,7 @@ function send_backup_to_gdrive() {
     echo "[Debug] FORCE_CHECK_REMOVE_EXPIRED_GDRIVE_BACKUP=$FORCE_CHECK_REMOVE_EXPIRED_GDRIVE_BACKUP"
     [[ $FORCE_CHECK_REMOVE_EXPIRED_GDRIVE_BACKUP = 1 ]] && gdrive_delete_expired_backup
 
-    echo "Done uploading $D_CONTAINER_NAME to Gdrive."
+    __log "Done uploading $D_CONTAINER_NAME to Gdrive."
     echo " "
 
 }
