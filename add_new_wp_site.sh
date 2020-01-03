@@ -158,7 +158,7 @@ ls -al "$HOMEDIR"
 # mysql> FLUSH PRIVILEGES;
 # MySQL> SELECT User FROM mysql.user;
 
-mysql -e "CREATE DATABASE IF NOT EXISTS `${DBNAME}`;"
+mysql -e "CREATE DATABASE IF NOT EXISTS ${DBNAME};"
 mysql -e "SHOW DATABASES;"
 mysql -e "CREATE USER IF NOT EXISTS '${DBUSER}'@'localhost' IDENTIFIED BY '${DBPASS}'"
 mysql -e "GRANT ALL PRIVILEGES ON ${DBNAME}.* To '${DBUSER}'@'localhost';"
