@@ -11,7 +11,7 @@ fi
 read -p "Enter domain to clone (nginx config) FROM (enter to skip) > " VAR_INPUT
 FROM_DOMAIN="${VAR_INPUT//[^a-zA-Z0-9\.\-_]/}"
 
-if [ $FROM_DOMAIN == "" ]; then
+if [ -z $FROM_DOMAIN ]; then
     FROM_DOMAIN="default.tpl"
 fi
 
@@ -177,9 +177,9 @@ else
     sed -i "s/$FROM_DOMAIN/$DOMAIN/" /etc/nginx/conf.d/${DOMAIN}.conf
 
     # HTTPS...
-    if [ -f "/etc/nginx/conf.d/${FROM_DOMAIN}_https.conf" ]; then
+    if [ -f "/etc/nginx/conf.d/${FROM_DOMAIN}_https.conf.sample" ]; then
         echo "Copying nginx https conf..."
-        cp "/etc/nginx/conf.d/${FROM_DOMAIN}_https.conf" "/etc/nginx/conf.d/${DOMAIN}_https.conf.sample"
+        cp "/etc/nginx/conf.d/${FROM_DOMAIN}_https.conf.sample" "/etc/nginx/conf.d/${DOMAIN}_https.conf.sample"
         # Replace to new domain
         sed -i "s/$FROM_DOMAIN/$DOMAIN/" /etc/nginx/conf.d/${DOMAIN}_https.conf.sample
     fi
