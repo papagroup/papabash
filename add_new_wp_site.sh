@@ -7,6 +7,14 @@ else
     DOMAIN="${VAR_INPUT//[^a-zA-Z0-9\.\-_]/}"
 fi
 
+
+read -p "Enter domain to clone (nginx config) FROM (enter to skip) > " VAR_INPUT
+FROM_DOMAIN="${VAR_INPUT//[^a-zA-Z0-9\.\-_]/}"
+
+if [ $FROM_DOMAIN == "" ]; then
+    FROM_DOMAIN="default.tpl"
+fi
+
 #read -p "Enter username > " VAR_INPUT
 #USERNAME="${VAR_INPUT//[^a-zA-Z0-9\-_]/}"
 
@@ -49,28 +57,13 @@ else
     echo "WP_ADMIN_PASS=$WP_ADMIN_PASS" >> ${ENV_FILE}
     echo "WP_ADMIN_EMAIL=$WP_ADMIN_EMAIL" >> ${ENV_FILE}
 fi
-    
-echo "#***********************"
-#echo "#Adding new wp site for"
-echo "DOMAIN=$DOMAIN"
-echo "#***********************"
-#echo "#New user..."
-echo "USERNAME=$USERNAME"
-echo "PASSWORD=$PASSWORD"
-echo "HOMEDIR=$HOMEDIR"
-echo "PUBLIC_HTML_DIR=$PUBLIC_HTML_DIR"
-echo "#***********************"
-#echo "#New DB..."
-echo "DBNAME=$DBNAME"
-echo "DBUSER=$DBUSER"
-echo "DBPASS=$DBPASS"
-echo "DBPREFIX=$DBPREFIX"
-echo "#***********************"
-#echo "#New WP admin..."
-echo "WP_ADMIN_USER=$WP_ADMIN_USER"
-echo "WP_ADMIN_PASS=$WP_ADMIN_PASS"
-echo "WP_ADMIN_EMAIL=$WP_ADMIN_EMAIL"
-echo "#***********************"
+
+# Check template nginx conf
+if [ ! -f "/etc/nginx/conf.d/$FROM_DOMAIN.conf" ]; then
+    echo "Nginx conf file of $FROM_DOMAIN does NOT exists!"
+    echo "Exiting..."
+    exit 5
+fi
 
 if id "$USERNAME" >/dev/null 2>&1; then
     echo "User exists. Please check again or use 'userdel <$USERNAME>' to delete the user first."
@@ -93,19 +86,38 @@ else
 
     #1.1 + 1.2 + 1.3 + 1.4
     useradd $USERNAME -p $PASSWORD -m -d $HOMEDIR
-    
     # -G wheel
-
 fi
+
+echo "#***********************"
+#echo "#Adding new wp site for"
+echo "DOMAIN=$DOMAIN"
+echo "#***********************"
+#echo "#New user..."
+echo "USERNAME=$USERNAME"
+echo "PASSWORD=$PASSWORD"
+echo "HOMEDIR=$HOMEDIR"
+echo "PUBLIC_HTML_DIR=$PUBLIC_HTML_DIR"
+echo "#***********************"
+#echo "#New DB..."
+echo "DBNAME=$DBNAME"
+echo "DBUSER=$DBUSER"
+echo "DBPASS=$DBPASS"
+echo "DBPREFIX=$DBPREFIX"
+echo "#***********************"
+#echo "#New WP admin..."
+echo "WP_ADMIN_USER=$WP_ADMIN_USER"
+echo "WP_ADMIN_PASS=$WP_ADMIN_PASS"
+echo "WP_ADMIN_EMAIL=$WP_ADMIN_EMAIL"
+echo "#***********************"
 
 read -p "Everything is correct? (y/n) > " VAR_INPUT
 if [ "$VAR_INPUT" != "y" ]; then
     echo "See you."
     exit 1
 fi
-
-echo "#Starting..."
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+echo "#Starting..."
 
 # Check dirs
 if [ ! -d "$PUBLIC_HTML_DIR" ]; then
@@ -159,17 +171,24 @@ mysql -e "SELECT User FROM mysql.user;"
 if [ -f "/etc/nginx/conf.d/$DOMAIN.conf" ]; then
     echo "Nginx conf file exists."
 else
-    echo "Adding nginx conf..."
-    cp /etc/nginx/conf.d/papagroup.net.conf "/etc/nginx/conf.d/$DOMAIN.conf"
-
+    echo "Copying nginx conf..."
+    cp /etc/nginx/conf.d/$FROM_DOMAIN.conf "/etc/nginx/conf.d/$DOMAIN.conf"
     # Replace to new domain
-    sed -i "s/papagroup.net/$DOMAIN/" /etc/nginx/conf.d/${DOMAIN}.conf
+    sed -i "s/$FROM_DOMAIN/$DOMAIN/" /etc/nginx/conf.d/${DOMAIN}.conf
+
+    # HTTPS...
+    if [ -f "/etc/nginx/conf.d/${FROM_DOMAIN}_https.conf" ]; then
+        echo "Copying nginx https conf..."
+        cp "/etc/nginx/conf.d/${FROM_DOMAIN}_https.conf" "/etc/nginx/conf.d/${DOMAIN}_https.conf.sample"
+        # Replace to new domain
+        sed -i "s/$FROM_DOMAIN/$DOMAIN/" /etc/nginx/conf.d/${DOMAIN}_https.conf.sample
+    fi
 
     echo 'Checking nginx syntax...'
     nginx -t
 
     # Failed checking nginx -> exit
-    [ $? -eq 0 ]  || exit 3
+    [ $? -eq 0 ] || exit 3
 
     echo 'Restarting nginx...'
     service nginx restart
