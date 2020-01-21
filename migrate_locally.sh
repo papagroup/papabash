@@ -63,6 +63,7 @@ WP_ADMIN_PASS=Fa24FHPdmO6vd34X
 WP_ADMIN_EMAIL=no-reply@papagroup.net
 #***********************
 
+NGINX_USERNAME="www-data"
 ENV_ROOT="/root/.genwpsites"
 ENV_DIR="$ENV_ROOT/$DOMAIN"
 ENV_FILE="$ENV_DIR/.env"
@@ -145,17 +146,34 @@ rsync -avh ${FROM_PUBLIC_HTML_DIR}/backup_db/${EXPORTED_DB_FILENAME} "${PUBLIC_H
 # cp "${EXPORTED_DB}" "${EXPORTED_DB}.bak"
 EXPORTED_DB_FILE="${PUBLIC_HTML_DIR}/backup_db/origin_db/${EXPORTED_DB_FILENAME}"
 
-echo "# Change database prefix..."
-sed -i "s/$FROM_DOMAIN/$DOMAIN/g" ${EXPORTED_DB_FILE}
+# echo "# Change database domain..."
+# sed -i "s/$FROM_DOMAIN/$DOMAIN/g" ${EXPORTED_DB_FILE}
 # sudo -u ${USERNAME} -i -- php -d memory_limit=-1 /usr/local/bin/wp --path=${PUBLIC_HTML_DIR} 
-echo "# Change database domain..."
+echo "# Change database prefix..."
 sed -i "s/$FROM_DBPREFIX/$DBPREFIX/g" ${EXPORTED_DB_FILE}
 # sudo -u ${USERNAME} -i -- php -d memory_limit=-1 /usr/local/bin/wp --path=${PUBLIC_HTML_DIR} search-replace "${FROM_DBPREFIX}" "${DBPREFIX}"
+echo "# Clean old database (drop tables)..."
+sudo -u ${USERNAME} -i -- php -d memory_limit=-1 /usr/local/bin/wp --path=${PUBLIC_HTML_DIR} db clean --yes
 echo "# Import database..."
 sudo -u ${USERNAME} -i -- php -d memory_limit=-1 /usr/local/bin/wp --path=${PUBLIC_HTML_DIR} db import ${EXPORTED_DB_FILE}
+echo "# Change database domain..."
+sudo -u ${USERNAME} -i -- php -d memory_limit=-1 /usr/local/bin/wp --path=${PUBLIC_HTML_DIR} search-replace "$FROM_DOMAIN" "$DOMAIN"
+
+echo "# Fix permission..."
+find $PUBLIC_HTML_DIR -type d -exec chmod 755 '{}' \;
+find $PUBLIC_HTML_DIR -type f -exec chmod 644 '{}' \;
+chown -R ${NGINX_USERNAME}:${NGINX_USERNAME} $PUBLIC_HTML_DIR
+chown ${NGINX_USERNAME}:${NGINX_USERNAME} $PUBLIC_HTML_DIR/..
+
 echo "# Flush..."
 sudo -u ${USERNAME} -i -- php -d memory_limit=-1 /usr/local/bin/wp --path=${PUBLIC_HTML_DIR} rewrite flush
-# sed -i "s/demopapagrou_cwo93_/medimaypapag_FlZDu_/g" medimay.vn.20jan04.sql
+
+echo '# Checking nginx syntax...'
+nginx -t
+# Failed checking nginx -> exit
+[ $? -eq 0 ] || exit 3
+echo '# Restarting nginx...'
+service nginx restart
 
 echo "All done."
 exit 0
