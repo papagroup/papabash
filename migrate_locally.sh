@@ -146,7 +146,7 @@ rsync -avh ${FROM_PUBLIC_HTML_DIR}/backup_db/${EXPORTED_DB_FILENAME} "${PUBLIC_H
 # cp "${EXPORTED_DB}" "${EXPORTED_DB}.bak"
 EXPORTED_DB_FILE="${PUBLIC_HTML_DIR}/backup_db/origin_db/${EXPORTED_DB_FILENAME}"
 
-# echo "# Change database domain..."
+# echo "# Change database domain... (!! Not fully worked with `sed` !!)"
 # sed -i "s/$FROM_DOMAIN/$DOMAIN/g" ${EXPORTED_DB_FILE}
 # sudo -u ${USERNAME} -i -- php -d memory_limit=-1 /usr/local/bin/wp --path=${PUBLIC_HTML_DIR} 
 echo "# Change database prefix..."
