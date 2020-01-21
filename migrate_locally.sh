@@ -63,7 +63,6 @@ WP_ADMIN_PASS=Fa24FHPdmO6vd34X
 WP_ADMIN_EMAIL=no-reply@papagroup.net
 #***********************
 
-
 ENV_ROOT="/root/.genwpsites"
 ENV_DIR="$ENV_ROOT/$DOMAIN"
 ENV_FILE="$ENV_DIR/.env"
@@ -82,7 +81,7 @@ echo "FROM_DOMAIN=$FROM_DOMAIN"
 echo "FROM_USERNAME=$FROM_USERNAME"
 echo "FROM_DBNAME=$FROM_DBNAME"
 echo "FROM_DBPREFIX=$FROM_DBPREFIX"
-echo "FROM_PUBLIC_HTML_DIR=$PUBLIC_HTML_DIR"
+echo "FROM_PUBLIC_HTML_DIR=$FROM_PUBLIC_HTML_DIR"
 echo "#***********************"
 #echo "#Adding new wp site for"
 echo "DOMAIN=$DOMAIN"
@@ -113,21 +112,27 @@ fi
 
 echo "#Start LOCAL MIGRATING..."
 
+# Backup wp-config.php
+mv ${PUBLIC_HTML_DIR}/wp-config.php ${PUBLIC_HTML_DIR}/wp-config.php.new
 # Copy themes & plugins & uploads
-# rsync -avh -e "ssh -p ${SSH_PORT}" ${SSH_USER}@${SSH_HOST}:${FROM_PUBLIC_HTML_DIR}/wp-content/themes ${PUBLIC_HTML_DIR}/wp-content/
-rsync -avh ${FROM_PUBLIC_HTML_DIR}/wp-content/themes ${PUBLIC_HTML_DIR}/wp-content/
-# rsync -avh -e "ssh -p ${SSH_PORT}" ${SSH_USER}@${SSH_HOST}:${FROM_PUBLIC_HTML_DIR}/wp-content/plugins ${PUBLIC_HTML_DIR}/wp-content/
-rsync -avh ${FROM_PUBLIC_HTML_DIR}/wp-content/plugins ${PUBLIC_HTML_DIR}/wp-content/
-# rsync -avh -e "ssh -p ${SSH_PORT}" ${SSH_USER}@${SSH_HOST}:${FROM_PUBLIC_HTML_DIR}/wp-content/uploads ${PUBLIC_HTML_DIR}/wp-content/
-rsync -avh ${FROM_PUBLIC_HTML_DIR}/wp-content/uploads ${PUBLIC_HTML_DIR}/wp-content/
+# rsync -avh ${FROM_PUBLIC_HTML_DIR}/wp-content/themes ${PUBLIC_HTML_DIR}/wp-content/
+# rsync -avh ${FROM_PUBLIC_HTML_DIR}/wp-content/plugins ${PUBLIC_HTML_DIR}/wp-content/
+# rsync -avh ${FROM_PUBLIC_HTML_DIR}/wp-content/uploads ${PUBLIC_HTML_DIR}/wp-content/
+rsync -avh ${FROM_PUBLIC_HTML_DIR}/* ${PUBLIC_HTML_DIR}/
+# Restore wp-config.php
+mv ${PUBLIC_HTML_DIR}/wp-config.php ${PUBLIC_HTML_DIR}/wp-config.php.old
+mv ${PUBLIC_HTML_DIR}/wp-config.php.new ${PUBLIC_HTML_DIR}/wp-config.php
 
 # Get db
 echo "# Export database..."
 # EXPORTED_DB_FILENAME="${FROM_DOMAIN}.latest.sql"
 EXPORTED_DB_FILENAME="${FROM_DOMAIN}.$(date +\%Y-\%m-\%d).sql"
 # ssh -p ${SSH_PORT} ${SSH_USER}@${SSH_HOST} sudo -u ${FROM_USERNAME} -i "mkdir -p ${FROM_PUBLIC_HTML_DIR}/backup_db/"
-mkdir -p "${FROM_PUBLIC_HTML_DIR}/backup_db/"
-mkdir -p "${PUBLIC_HTML_DIR}/backup_db/origin_db/"
+# make sure follow command allowed
+sudo chown ${FROM_USERNAME} ${FROM_PUBLIC_HTML_DIR}
+sudo chown ${USERNAME} ${PUBLIC_HTML_DIR}
+sudo -u ${FROM_USERNAME} -i -- mkdir -p "${FROM_PUBLIC_HTML_DIR}/backup_db/"
+sudo -u ${USERNAME} -i -- mkdir -p "${PUBLIC_HTML_DIR}/backup_db/origin_db/"
 
 # ssh -p ${SSH_PORT} ${SSH_USER}@${SSH_HOST} "sudo -u ${FROM_USERNAME} -i -- php -d memory_limit=-1 /usr/local/bin/wp --path=${FROM_PUBLIC_HTML_DIR} db export '${FROM_PUBLIC_HTML_DIR}/backup_db/${EXPORTED_DB_FILENAME}'"
 sudo -u ${FROM_USERNAME} -i -- php -d memory_limit=-1 /usr/local/bin/wp --path=${FROM_PUBLIC_HTML_DIR} db export "${FROM_PUBLIC_HTML_DIR}/backup_db/${EXPORTED_DB_FILENAME}"
