@@ -16,6 +16,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ------------------------------------------------------------
+# USAGE (in crontab):
+# 
+# PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin
+# MAILTO="nhan.huynhvan@papagroup.net"
+#
+# 27 17 * * * bash /var/www/papabash/docker_backup.sh -y --container "db_container_1" --name "site.com" --destination "/var/www/db_backups" --volume-dir "/var/lib/mysql" --retain-days 7 > /dev/null
+# 
+# 31 17 * * * bash /var/www/papabash/docker_backup.sh -y --container "web_container_1" --name "site.com" --destination "/var/www/backups" --volume-dir "/var/www/site.com" --retain-days 2 > /dev/null
+# -----------------------------------------------------------
+
+
 
 # Halt the script on any errors.
 set -e
@@ -24,7 +35,7 @@ set -e
 # Default Configuration
 # ----------
 LOCAL_BACKUP_DESTINATION="/where/to/save/backup/files"  # Local path for backups
-GDRIVE_ROOT_FOLDER="M-Backups"                          # Remote destination root on gdrive
+GDRIVE_ROOT_FOLDER="Papa-Backups"                          # Remote destination root on gdrive
 # EMAIL="nhan.huynhvan@papagroup.net"                   # Email ID for Backup Status Notification
 
 # ----------
@@ -54,7 +65,7 @@ RESTORE_DATE=$TODAY                                      # Default restore date 
 RETAIN_DAYS=2                                            # Days to backups you would like to keep
 EXPIRED_DATE=$(date +"%Y-%m-%d" -d "-$RETAIN_DAYS days") # Expired file determined by calculated date := today - retain_days
 
-LOG_FILE="/tmp/m_backup_log"
+LOG_FILE="/tmp/papa_backup_log"
 
 # A list of folder names and files to exclude. There's no point backing up
 # massive folders such as node_modules, plus you'll likely end up getting max
@@ -83,7 +94,6 @@ exclude_paths=(
   ".babelrc"
   ".editorconfig"
   ".env.example"
-  ".env.mevent.example"
   "bitbucket-pipelines.yml"
   "release"
   ".DS_Store"
