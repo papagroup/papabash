@@ -60,10 +60,10 @@ FORCE_CHECK_REMOVE_EXPIRED_GDRIVE_BACKUP=0      # 1 - force check and remove gdr
 # Initialization
 # ----------
 me=$(basename "$0")
-TODAY=$(date +"%Y-%m-%d")                                # Today date
-RESTORE_DATE=$TODAY                                      # Default restore date is today
-RETAIN_DAYS=2                                            # Days to backups you would like to keep
-EXPIRED_DATE=$(date +"%Y-%m-%d" -d "-$RETAIN_DAYS days") # Expired file determined by calculated date := today - retain_days
+TODAY=$(date +"%Y-%m-%d_%H")                                # Today date
+RESTORE_DATE=$TODAY                                         # Default restore date is today
+RETAIN_DAYS=2                                               # Days to backups you would like to keep
+EXPIRED_DATE=$(date +"%Y-%m-%d" -d "-$RETAIN_DAYS days")'*' # Expired file determined by calculated date := today - retain_days
 
 LOG_FILE="/tmp/papa_backup_log"
 
@@ -222,8 +222,8 @@ function parse_args() {
             shift
             ;;
         --retain-days )
-            RETAIN_DAYS=$1                                           # Days to backups you would like to keep
-            EXPIRED_DATE=$(date +"%Y-%m-%d" -d "-$RETAIN_DAYS days") # Expired file determined by calculated date := today - retain_days
+            RETAIN_DAYS=$1                                              # Days to backups you would like to keep
+            EXPIRED_DATE=$(date +"%Y-%m-%d" -d "-$RETAIN_DAYS days")'*' # Expired file determined by calculated date := today - retain_days
             shift
             ;;
 		-q | --no-output )
@@ -498,13 +498,34 @@ function local_delete_expired_backup() {
     FILE_TO_REMOVE="$LOCAL_BACKUP_DESTINATION/$D_CONTAINER_NAME.$D_NAME.$EXPIRED_DATE.tar.gz"
     echo " "
     echo "Finding local expired backup ($FILE_TO_REMOVE)..."
-    if [[ -e "$FILE_TO_REMOVE" ]]; then
-        __log "Deleting local expired backup ($FILE_TO_REMOVE) ..."
-        $CLEAN $FILE_TO_REMOVE
-        [[ ! -f $FILE_TO_REMOVE ]] && __log "=> Deleted."
-    else
-        echo "=> Not found."
-    fi
+
+    # if [[ -e "$FILE_TO_REMOVE" ]]; then
+    #     __log "Deleting local expired backup ($FILE_TO_REMOVE) ..."
+    #     $CLEAN $FILE_TO_REMOVE
+    #     [[ ! -f $FILE_TO_REMOVE ]] && __log "=> Deleted."
+    # else
+    #     echo "=> Not found."
+    # fi
+
+    for f in $FILE_TO_REMOVE; do
+
+        ## Check if the glob gets expanded to existing files.
+        ## If not, f here will be exactly the pattern above
+        ## and the exists test will evaluate to false.
+        # [ -e "$f" ] && __log "files do exist" || __log "files do not exist"
+
+        if [[ -e "$f" ]]; then
+            __log "Deleting local expired backup ($f) ..."
+            $CLEAN -f $f
+            [[ ! -f $f ]] && __log "=> Deleted."
+        else
+            echo "=> Not found."
+        fi
+
+        ## This is all we needed to know, so we can break after the first iteration
+        break
+    done
+
     echo " "
 }
 
@@ -546,13 +567,22 @@ function send_backup_to_gdrive() {
 	fi
 
     FILE_TO_REMOVE="$LOCAL_BACKUP_DESTINATION/$D_CONTAINER_NAME.$D_NAME.$EXPIRED_DATE.tar.gz"
-	if [ -f "$FILE_TO_REMOVE" ]; then
-        __log "Backup file to delete : $D_CONTAINER_NAME.$D_NAME.$EXPIRED_DATE.tar.gz ($(stat -c%s $FILE_TO_REMOVE | awk '{ split( "B KB MB GB TB PB" , v ); s=1; while( $1>1000 ){ $1/=1000; s++ } printf "%.2f %s", $1, v[s] }'))"
+    for f in $FILE_TO_REMOVE; do
+        __log "Backup file to delete :"
+        ## Check if the glob gets expanded to existing files.
+        ## If not, f here will be exactly the pattern above
+        ## and the exists test will evaluate to false.
+        # [ -e "$f" ] && __log "files do exist" || __log "files do not exist"
+        if [ -f "$f" ]; then
+            __log " - $f ($(stat -c%s $f | awk '{ split( "B KB MB GB TB PB" , v ); s=1; while( $1>1000 ){ $1/=1000; s++ } printf "%.2f %s", $1, v[s] }'))"
+        else
+            __log " - $f (Not found)"
+        fi
         __log "----------------------------------------------"
-	else
-        __log "Backup file to delete : $D_CONTAINER_NAME.$D_NAME.$EXPIRED_DATE.tar.gz (Not found)"
-        __log "----------------------------------------------"
-	fi
+
+        ## This is all we needed to know, so we can break after the first iteration
+        break
+    done
 
     #Check remote backup folder exists on gdrive
     GDRIVE_ROOT_FOLDER_ID=$(gdrive list --no-header --query "name = '$GDRIVE_ROOT_FOLDER'" --max 1 --order createdTime | grep dir | awk '{ print $1 }')
