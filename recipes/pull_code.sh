@@ -16,7 +16,8 @@ RELEASE_COUNT=`find $RELEASES_PATH -maxdepth 1 -mindepth 1 -type d | wc -l`
 # CURRENT_RELEASE_INDEX=$(find $RELEASES_PATH -maxdepth 1 -mindepth 1 -type d -printf '%p\n' | sort -r | head -n 1 | cut -d '/' -f 2) # by alphabet
 CURRENT_RELEASE_INDEX=`cd $RELEASES_PATH && [[ -z "$(ls $RELEASES_PATH)" ]] && echo "00" || ls * -td | head -n 1` # latest dir or "00" if empty
 # increase +1 to create next release dir
-RELEASE_ID=$((CURRENT_RELEASE_INDEX+1))
+# RELEASE_ID=$((CURRENT_RELEASE_INDEX+1)) # -bash: 08: value too great for base (error token is "08") ?!
+RELEASE_ID=`expr $CURRENT_RELEASE_INDEX + 1`
 # check if it's below 10 since you need the 0 infront of it
 if [ $RELEASE_ID -lt "10" ]; then
    RELEASE_ID=0$RELEASE_ID
@@ -88,4 +89,3 @@ fi
 cd $PROJECT_ROOT && if [ -e release ]; then  rm release; fi
 cd $PROJECT_ROOT && if [ -h release ]; then  rm release; fi
 echo "🚀 Successfully deployed 🚀"
-
