@@ -370,7 +370,25 @@ function restore_docker_volume() {
     __log "Restoring backup..."
     __log "Restore to container  : $D_CONTAINER_NAME"
 
-    FILE_TO_RESTORE="$LOCAL_BACKUP_DESTINATION/$D_CONTAINER_NAME.$D_NAME.$RESTORE_DATE.tar.gz"
+    # FILE_TO_RESTORE="$LOCAL_BACKUP_DESTINATION/$D_CONTAINER_NAME.$D_NAME.$RESTORE_DATE.tar.gz"
+    prompt="Please select a file to remove (0 to Quit):"
+    options=( $(find $LOCAL_BACKUP_DESTINATION -maxdepth 1 -print0 | xargs -0) )
+
+    PS3="$prompt "
+    select opt in "${options[@]}" ; do
+        if (( REPLY == 0 )) ; then
+            exit
+
+        elif (( REPLY > 0 && REPLY <= ${#options[@]} )) ; then
+            echo  "You picked $opt which is file $REPLY"
+            break
+
+        else
+            echo "Invalid option. Try another one."
+        fi
+    done
+
+    FILE_TO_RESTORE=$opt
 
     # Local file not found => Try to download from gdrive first
     [ ! -f "$FILE_TO_RESTORE" ] && __log "Not found $FILE_TO_RESTORE..." && get_backup_file_from_drive
