@@ -1,0 +1,5 @@
+# crontab
+
+0 */12 * * * /usr/bin/docker exec papadock_longban_db_1 pg_dump -Ulongban > "/home/pg_databases/longban/db-longban-$(date '+\%Y-\%m-\%d_\%H0000').sql"
+3 */12 * * * /usr/bin/docker exec "papadock_longban_web_1" bash -c "tar -czvf ./saleor/longban.db-$(date '+\%Y-\%m-\%d_\%H0000').tar.gz -C ./db ." && mv /home/longban/saleor/longban.db-$(date '+\%Y-\%m-\%d_\%H0000').tar.gz /home/volume_backups/longban/
+5 17 * * * /usr/bin/docker exec "papadock_longban_web_1" bash -c "tar -czvf ./saleor/longban.media.tar.gz -C ./media ." && mv /home/longban/saleor/longban.media.tar.gz /home/volume_backups/longban/
