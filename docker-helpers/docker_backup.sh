@@ -470,9 +470,14 @@ function setup() {
 
         echo "Download And Install Gdrive..."
         if [ $(getconf LONG_BIT) = "64" ]; then
-            wget "https://drive.google.com/uc?id=1Ej8VgsW5RgK66Btb9p74tSdHMH3p4UNb&export=download" -O /usr/bin/gdrive
+            # wget "https://drive.google.com/uc?id=1Ej8VgsW5RgK66Btb9p74tSdHMH3p4UNb&export=download" -O /usr/bin/gdrive
+            # wget "https://github.com/gdrive-org/gdrive/releases/download/2.1.0/gdrive-linux-arm64" -O /usr/bin/gdrive
+
+            # wget "https://github.com/gdrive-org/gdrive/releases/download/2.1.0/gdrive-linux-x64" -O /usr/bin/gdrive
+            wget -O drive "https://drive.google.com/uc?id=0B3X9GlR6EmbnMHBMVWtKaEZXdDg" /usr/bin/gdrive
         else
-            wget "https://drive.google.com/uc?id=1eo9hMXz0WyuBwRxPM0LrTtQmhTgOLUlg&export=download" -O /usr/bin/gdrive
+            # wget "https://drive.google.com/uc?id=1eo9hMXz0WyuBwRxPM0LrTtQmhTgOLUlg&export=download" -O /usr/bin/gdrive
+            wget "https://github.com/gdrive-org/gdrive/releases/download/2.1.0/gdrive-linux-386" -O /usr/bin/gdrive
         fi
 
         chmod 777 /usr/bin/gdrive
