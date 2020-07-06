@@ -371,7 +371,7 @@ function restore_docker_volume() {
     __log "Restore to container  : $D_CONTAINER_NAME"
 
     # FILE_TO_RESTORE="$LOCAL_BACKUP_DESTINATION/$D_CONTAINER_NAME.$D_NAME.$RESTORE_DATE.tar.gz"
-    prompt="Please select a file to remove (0 to Quit):"
+    prompt="Please select a file to restore (0 to Quit):"
     options=( $(find $LOCAL_BACKUP_DESTINATION -maxdepth 1 -print0 | xargs -0) )
 
     PS3="$prompt "
@@ -403,8 +403,8 @@ function restore_docker_volume() {
         CONTAINER_EXIST=$(docker ps --filter status=running | grep -w "$D_CONTAINER_NAME" | awk '{ print $1 }')
         if [ -z $CONTAINER_EXIST ]; then
             # Not exists => return
-            __log "Container to restore ($D_CONTAINER_NAME) not exists or not running. Abort."
-            return 0
+            __log "Container to restore ($D_CONTAINER_NAME) not exists or not running..."
+            # return 0
         fi
 
         # Check if old volume still there
@@ -435,10 +435,12 @@ function restore_docker_volume() {
         # fi
         # Stop the database container to prevent read/writes during the database
         echo "[Debug] Stopping container '$D_CONTAINER_NAME'..."
+        # TODO: RESTART WHEN FAILED
         docker stop "$D_CONTAINER_NAME"
 
         # Remove the /var/lib/mysql contents from the database container.
-        echo "[Debug] Removing container '$D_CONTAINER_NAME''s data at '$D_VOLUME_PATH/*'..."
+        # TODO: BACKUP-RESTORE/REVERT WHEN FAILED
+        echo "[Debug] Removing container $D_CONTAINER_NAME 's data at '$D_VOLUME_PATH/*'..."
         docker run --rm --volumes-from "$D_CONTAINER_NAME" alpine:3.3 bin/sh -c "rm -rf $D_VOLUME_PATH/*"
 
         # Use the ubuntu image with the `restore` command to extract
@@ -473,8 +475,8 @@ function setup() {
             # wget "https://drive.google.com/uc?id=1Ej8VgsW5RgK66Btb9p74tSdHMH3p4UNb&export=download" -O /usr/bin/gdrive
             # wget "https://github.com/gdrive-org/gdrive/releases/download/2.1.0/gdrive-linux-arm64" -O /usr/bin/gdrive
 
-            # wget "https://github.com/gdrive-org/gdrive/releases/download/2.1.0/gdrive-linux-x64" -O /usr/bin/gdrive
-            wget -O drive "https://drive.google.com/uc?id=0B3X9GlR6EmbnMHBMVWtKaEZXdDg" /usr/bin/gdrive
+            wget "https://github.com/gdrive-org/gdrive/releases/download/2.1.0/gdrive-linux-x64" -O /usr/bin/gdrive
+            # wget -O drive "https://drive.google.com/uc?id=0B3X9GlR6EmbnMHBMVWtKaEZXdDg" /usr/bin/gdrive
         else
             # wget "https://drive.google.com/uc?id=1eo9hMXz0WyuBwRxPM0LrTtQmhTgOLUlg&export=download" -O /usr/bin/gdrive
             wget "https://github.com/gdrive-org/gdrive/releases/download/2.1.0/gdrive-linux-386" -O /usr/bin/gdrive
