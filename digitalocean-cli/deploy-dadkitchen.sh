@@ -2,19 +2,6 @@
 
 set -e
 
-# Some vars
-
-export PROJECT_ROOT=/home/longban
-
-export mediaFileGdriveId=195qX...SQ6
-export mediaFile=/home/.media_backups/latest-media.tar.gz
-
-export dbFileGdriveId=15n...vvSR
-export dbFile=/home/.db_backups/latest-db.tar.gz
-
-#export HOST=danangkitchen.papagroup.net
-export HOST=admin.danangkitchen.vn
-
 # # Install doctl
 # # MacOS
 # brew install doctl
@@ -95,13 +82,13 @@ create_droplet_res=$(curl -X POST -H "Content-Type: application/json" -H "Author
     -d '{"name":"dnkitchen.com.vn","region":"sgp1","size":"s-1vcpu-2gb","image":"docker-18-04","ssh_keys":[25333604,27610331,27610358],"backups":false,"ipv6":true,"user_data":null,"private_networking":null,"volumes": null,"tags":["web","python","django","saleor","channels","docker","dnkitchen"]}' \
     "https://api.digitalocean.com/v2/droplets")
 # Get droplet_id
-$create_droplet_res | grep "id"
-export DROPLET_ID=198817502
+echo $create_droplet_res | grep "id"
+export DROPLET_ID=2...1
 echo $DROPLET_ID
 # Check status
 curl -X GET -H "Content-Type: application/json" -H "Authorization: Bearer $TOKEN" "https://api.digitalocean.com/v2/droplets/$DROPLET_ID" 2>&1 | grep '"status":"active"'
 # DROPLET_IP=$("ip_address":"206.189.154.162")
-export DROPLET_IP=206.189.150.122
+export DROPLET_IP=1...2
 
 
 # SSH && Pull code
@@ -111,6 +98,19 @@ scp /Users/pii/.ssh/id_rsa_papagroup_gitlab_readonly root@$DROPLET_IP:~/.ssh/
 scp /Users/pii/.ssh/id_rsa_papagroup_gitlab_readonly.pub root@$DROPLET_IP:~/.ssh/
 
 ssh root@$DROPLET_IP
+
+# Some vars
+
+export PROJECT_ROOT=/home/longban
+
+export mediaFileGdriveId=1YRUK...ecm
+export mediaFile=/home/.media_backups/latest-media.tar.gz
+
+export dbFileGdriveId=1U...jao
+export dbFile=/home/.db_backups/latest-db.tar.gz
+
+#export HOST=danangkitchen.papagroup.net
+export HOST=admin.danangkitchen.vn
 
 # Add to ssh agent
 eval $(ssh-agent -s)
@@ -123,7 +123,7 @@ git clone git@gitlab.com:papagroup/longban-web-saleor.git /home/longban
 
 # Get papabash
 git clone --recurse-submodules https://github.com/papagroup/papabash.git /root/papabash
-git submodule update --init --recursive
+# git submodule update --init --recursive
 # Pull manually: git submodule update --remote
 
 # Restore DB
@@ -132,7 +132,7 @@ git submodule update --init --recursive
 
 # Install golang
 apt update
-apt install golang-go
+apt install -y golang-go
 
 # Install gdown
 apt install -y python-pip
@@ -142,6 +142,10 @@ pip install gdown
 wget "https://drive.google.com/uc?id=19Y364iDL7xnOWaKV0xIxibOdVJqFcHbo&export=download" -O /usr/bin/gdrive
 chmod 700 /usr/bin/gdrive
 gdrive list
+
+# Run web server
+docker-compose -f /home/longban/docker-compose.yml up -d
+bash /home/longban/scripts/update_production--docker.sh
 
 # Get the latest db volume
 mkdir -p /home/.db_backups
@@ -215,6 +219,9 @@ docker restart longban_nginx_1 \
     --debug \
 && docker exec -it longban_nginx_1 nginx -t
 && docker restart longban_nginx_1
+
+# Readd https nginx config
+mv /home/longban/nginx/sites/danangkitchen-https.conf.bak /home/longban/nginx/sites/danangkitchen-https.conf
 
 # Check db connection
 
