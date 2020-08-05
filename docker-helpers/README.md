@@ -44,5 +44,10 @@ Example:
 ```
 PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin
 
-5 */5 * * * bash /root/papabash/docker-helpers/docker_backup.sh -y --container "longban_db_1" --name "danangkitchen.vn" --destination "/home/.db_backups" --volume-dir "/var/lib/postgresql/data" --retain-days 7 > /dev/null
+5 */5 * * * bash /root/papabash/docker-helpers/docker_backup.sh -y --container "longban_db_1" --name "danangkitchen.vn" --destination "/home/.db_backups" --volume-dir "/var/lib/postgresql/data" --retain-days 3 > /dev/null
+
+7 */5 * * * bash /root/papabash/docker-helpers/docker_backup.sh -y --container "longban_web_1" --name "danangkitchen.vn" --destination "/home/.media_backups" --volume-dir "/app/media" --retain-days 2
+
 ```
+
+<!-- bash /home/admin/papabash/docker-helpers/docker_backup.sh -y --container "securityalarm-webservices_db_1" --name "securityalarm-pg" --destination "/home/.db_backups" --volume-dir "/var/lib/postgresql/data" --retain-days 5 > /dev/null -->

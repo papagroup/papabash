@@ -15,4 +15,5 @@ docker run -it --rm \
     --email papagroup.net@gmail.com \
     -d admin.danangkitchen.vn \
     --debug \
-    --dry-run
+&& docker exec -it longban_nginx_1 nginx -t
+&& docker restart longban_nginx_1
