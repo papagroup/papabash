@@ -370,7 +370,7 @@ function restore_docker_volume() {
 
     # FILE_TO_RESTORE="$LOCAL_BACKUP_DESTINATION/$D_NAME/$D_CONTAINER_NAME.$RESTORE_DATE.tar.gz"
     prompt="Please select a file to restore (0 to Quit):"
-    options=($(find $LOCAL_BACKUP_DESTINATION -maxdepth 1 -print0 | xargs -0))
+    options=($(find $LOCAL_BACKUP_DESTINATION/$D_NAME -maxdepth 1 -print0 | xargs -0))
 
     PS3="$prompt "
     select opt in "${options[@]}"; do
