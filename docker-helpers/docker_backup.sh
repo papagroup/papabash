@@ -625,18 +625,18 @@ function send_backup_to_gdrive() {
     fi
 
     # Get current folder ID
-    echo "[Gdrive] Checking if folder already exists on gdrive - /$GDRIVE_ROOT_FOLDER/$D_CONTAINER_NAME/"
-    GDRIVE_CONTAINER_DIR_ID=$(gdrive list --no-header --query "name = '$D_CONTAINER_NAME'" --max 1 --order createdTime | grep dir | awk '{ print $1 }')
+    echo "[Gdrive] Checking if folder already exists on gdrive - /$GDRIVE_ROOT_FOLDER/$D_NAME/"
+    GDRIVE_CONTAINER_DIR_ID=$(gdrive list --no-header --query "name = '$D_NAME'" --max 1 --order createdTime | grep dir | awk '{ print $1 }')
     #Create folder if doesn't exist
     if [[ -z "$GDRIVE_CONTAINER_DIR_ID" ]]; then
         echo "[Gdrive] => Folder NOT exist."
         __log "[Gdrive] => Creating new folder..."
-        GDRIVE_RESPONSE=$(gdrive mkdir --parent $GDRIVE_ROOT_FOLDER_ID $D_CONTAINER_NAME)
+        GDRIVE_RESPONSE=$(gdrive mkdir --parent $GDRIVE_ROOT_FOLDER_ID $D_NAME)
         # echo "[Gdrive][Debug] GDRIVE_RESPONSE=$GDRIVE_RESPONSE"
         __log "$GDRIVE_RESPONSE"
         echo "[Gdrive][Debug] $($GDRIVE_RESPONSE | awk '{print $(NR+1)}')"
         # Get new folder ID
-        GDRIVE_CONTAINER_DIR_ID=$(gdrive list --no-header --query "name = '$D_CONTAINER_NAME'" --max 1 --order createdTime | grep dir | awk '{ print $1 }')
+        GDRIVE_CONTAINER_DIR_ID=$(gdrive list --no-header --query "name = '$D_NAME'" --max 1 --order createdTime | grep dir | awk '{ print $1 }')
         echo "[Gdrive] => Created new folder (id: $GDRIVE_CONTAINER_DIR_ID)"
     else
         echo "[Gdrive] => Folder exist (id: $GDRIVE_CONTAINER_DIR_ID)."
