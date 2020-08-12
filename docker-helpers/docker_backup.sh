@@ -21,9 +21,9 @@
 # PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin
 # MAILTO="nhan.huynhvan@papagroup.net"
 #
-# 27 17 * * * bash /var/www/papabash/docker_backup.sh -y --container "db_container_1" --name "site.com" --destination "/var/www/db_backups" --volume-dir "/var/lib/mysql" --retain-days 7 > /dev/null
+# 27 17 * * * bash $PAPABASH_ROOT/docker_backup.sh -y --container "db_container_1" --name "site.com" --destination "/var/www/db_backups" --volume-dir "/var/lib/mysql" --retain-days 7 > /dev/null
 #
-# 31 17 * * * bash /var/www/papabash/docker_backup.sh -y --container "web_container_1" --name "site.com" --destination "/var/www/backups" --volume-dir "/var/www/site.com" --retain-days 2 > /dev/null
+# 31 17 * * * bash $PAPABASH_ROOT/docker_backup.sh -y --container "web_container_1" --name "site.com" --destination "/var/www/backups" --volume-dir "/var/www/site.com" --retain-days 2 > /dev/null
 # -----------------------------------------------------------
 
 # Halt the script on any errors.
@@ -32,8 +32,10 @@ set -e
 # ----------
 # Default Configuration
 # ----------
-LOCAL_BACKUP_DESTINATION="/where/to/save/backup/files" # Local path for backups
-GDRIVE_ROOT_FOLDER="Papa-Backups"                      # Remote destination root on gdrive
+# PAPABASH_ROOT="/var/www/papabash"
+PAPABASH_ROOT="$PWD/papabash"                           # papabash root dir (should be at current user home)
+LOCAL_BACKUP_DESTINATION="/where/to/save/backup/files"  # Local path for backups
+GDRIVE_ROOT_FOLDER="Papa-Backups"                       # Remote destination root on gdrive
 # EMAIL="nhan.huynhvan@papagroup.net"                   # Email ID for Backup Status Notification
 
 # ----------
@@ -497,12 +499,12 @@ function setup() {
         case "$choice" in
         y | Y)
             echo "Auto install slacktee..."
-            if [[ -z "/var/www/papabash/slacktee" ]]; then
-                git clone https://github.com/course-hero/slacktee.git /var/www/papabash/slacktee
+            if [[ -z "$PAPABASH_ROOT/slacktee" ]]; then
+                echo "Seems slacktee already installed. (Found $PAPABASH_ROOT/slacktee)"
             else
-                echo "Seems slacktee already installed. (Found /var/www/papabash/slacktee)"
+                git clone https://github.com/course-hero/slacktee.git $PAPABASH_ROOT/slacktee
             fi
-            bash /var/www/papabash/slacktee/install.sh
+            bash $PAPABASH_ROOT/slacktee/install.sh
             result=$?
 
             if [[ "$result" == "0" ]]; then
