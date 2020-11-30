@@ -1,3 +1,4 @@
+
 # How to use docker backup/restore
 
 ```
@@ -12,14 +13,76 @@ git clone https://github.com/papagroup/papabash.git /root/papabash
 - Click "+ CREATE CREDENTIALS" > "OAuth client ID"
 - Choose "Desktop application" in "Application type" > Click "Create"
 
-## Re-build gdrive with new credentials
+## Install golang (to rebuild gdrive with new credentials)
 
-- Clone 
-- Go to gdrive/ 
-- Edit handlers_drive.go
++ option 1:
+```sh
+apt update && apt install -y golang-go
 ```
+
++ option 2:
+```sh
+cd /tmp
+wget https://golang.org/dl/go1.15.linux-amd64.tar.gz
+sudo tar -xvf go1.15.linux-amd64.tar.gz
+sudo mv go /usr/local
+export PATH=$PATH:/usr/local/go/bin
+```
+
+## Re-build gdrive with new credentials (OPTION 2)
+
+- Clone git:gitlab.com/papagroup/gdrive.git
+- Checkout another branch (e.g: prj_ABC)
+- Change client id & secret and push
+```sh
+vi handlers_drive.go
+#---
+const ClientId = "xxxxxxxx"
+const ClientSecret = "xxxxxxx"
+```
+- Run build command
+```sh
+env GIT_TERMINAL_PROMPT=1 go get gitlab.com/papagroup/gdrive
+# ...enter username & password
+# ...repo will be placed at ~/go/src/gdrive
+```
+- Go to `~/go/src/gdrive` to checkout to branch "prj_ABC" (<< this step is not tested yet)
+- Run build command again (<< this step is not tested yet)
+- OAuth & Check by running `gdrive list`
+
+## Re-build gdrive with new credentials (OPTION 2)
+
+- Clone
+```sh
+git clone https://github.com/prasmussen/gdrive.git
+```
+- Go to gdrive/ 
+```sh
+cd gdrive
+```
+- Edit handlers_drive.go
+```sh
+vi handlers_drive.go
+#---
 const ClientId = "367116221053-7n0v**.apps.googleusercontent.com"
 const ClientSecret = "1qsNodXN*****jUjmvhoO"
+```
+
+- Prepare go env & package
+```sh
+# write to ~/.profile
+export GOROOT=/usr/local/go
+export GOPATH=$HOME/go
+export PATH=$GOPATH/bin:$GOROOT/bin:$PATH
+
+# Check
+go version
+
+# Check env
+go env
+
+# get package github.com/prasmussen/gdrive
+go get github.com/prasmussen/gdrive
 ```
 
 - Run build script

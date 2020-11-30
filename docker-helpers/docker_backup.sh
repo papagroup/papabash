@@ -285,10 +285,10 @@ Backup file           : $D_CONTAINER_NAME.$TODAY.tar.gz"
         __log "----------------------------------------------"
     fi
 
-    # Check if container exists
-    [[ ! "$(docker ps | grep -w $D_CONTAINER_NAME)" ]] && err_exit 3 "Container $D_CONTAINER_NAME does not exist. Abort." # Abort
-    # Check if container started
-    [[ "$(docker ps -aq -f status=exited -f name=$D_CONTAINER_NAME)" ]] && err_exit 4 "Container $D_CONTAINER_NAME is exited. Abort." # Abort
+    # Check if container exists (?)
+    # [[ ! "$(docker ps | grep -w $D_CONTAINER_NAME)" ]] && err_exit 3 "Container $D_CONTAINER_NAME does not exist. Abort." # Abort
+    # Check if container started (?)
+    # [[ "$(docker ps -aq -f status=exited -f name=$D_CONTAINER_NAME)" ]] && err_exit 4 "Container $D_CONTAINER_NAME is exited. Abort." # Abort
 
     # Make sure the backup folder exists
     [[ ! -e "$LOCAL_BACKUP_DESTINATION/$D_NAME" ]] && mkdir -p "$LOCAL_BACKUP_DESTINATION/$D_NAME"
@@ -320,11 +320,18 @@ Backup file           : $D_CONTAINER_NAME.$TODAY.tar.gz"
     fi
 
     if [[ $WRITE_ON = 1 ]]; then
+
+        # Temporary stop the container
+        docker stop $D_CONTAINER_NAME && sleep 2
+        
         docker run \
             --rm \
             --volumes-from "$D_CONTAINER_NAME" \
             -v "$LOCAL_BACKUP_DESTINATION":/backup ubuntu bash \
             -c "tar -czvf /backup/$D_NAME/$D_CONTAINER_NAME.$TODAY.tar.gz $exclude_flags -C $D_VOLUME_PATH ."
+
+        # Re-start the container
+        sleep 2 && docker start $D_CONTAINER_NAME
 
         echo "Done backup $D_CONTAINER_NAME locally."
         echo " "
@@ -467,25 +474,28 @@ function setup() {
 
     # Check Gdrive
     file="/usr/bin/gdrive"
-    if [[ ! -f "$file" ]]; then
-        # if [[ -z $(command -v gdrive) ]]; then
+    # if [[ ! -f "$file" ]]; then
+    if [[ -z $(command -v gdrive) ]]; then
 
-        echo "Download And Install Gdrive..."
-        if [ $(getconf LONG_BIT) = "64" ]; then
-            # wget "https://drive.google.com/uc?id=1Ej8VgsW5RgK66Btb9p74tSdHMH3p4UNb&export=download" -O /usr/bin/gdrive
-            # wget "https://github.com/gdrive-org/gdrive/releases/download/2.1.0/gdrive-linux-arm64" -O /usr/bin/gdrive
+        # echo "Download And Install Gdrive..."
+        # if [ $(getconf LONG_BIT) = "64" ]; then
+        #     # wget "https://drive.google.com/uc?id=1Ej8VgsW5RgK66Btb9p74tSdHMH3p4UNb&export=download" -O /usr/bin/gdrive
+        #     # wget "https://github.com/gdrive-org/gdrive/releases/download/2.1.0/gdrive-linux-arm64" -O /usr/bin/gdrive
 
-            wget "https://github.com/gdrive-org/gdrive/releases/download/2.1.0/gdrive-linux-x64" -O /usr/bin/gdrive
-            # wget -O drive "https://drive.google.com/uc?id=0B3X9GlR6EmbnMHBMVWtKaEZXdDg" /usr/bin/gdrive
-        else
-            # wget "https://drive.google.com/uc?id=1eo9hMXz0WyuBwRxPM0LrTtQmhTgOLUlg&export=download" -O /usr/bin/gdrive
-            wget "https://github.com/gdrive-org/gdrive/releases/download/2.1.0/gdrive-linux-386" -O /usr/bin/gdrive
-        fi
+        #     wget "https://github.com/gdrive-org/gdrive/releases/download/2.1.0/gdrive-linux-x64" -O /usr/bin/gdrive
+        #     # wget -O drive "https://drive.google.com/uc?id=0B3X9GlR6EmbnMHBMVWtKaEZXdDg" /usr/bin/gdrive
+        # else
+        #     # wget "https://drive.google.com/uc?id=1eo9hMXz0WyuBwRxPM0LrTtQmhTgOLUlg&export=download" -O /usr/bin/gdrive
+        #     wget "https://github.com/gdrive-org/gdrive/releases/download/2.1.0/gdrive-linux-386" -O /usr/bin/gdrive
+        # fi
 
-        chmod 777 /usr/bin/gdrive
-        gdrive list
+        # chmod 777 /usr/bin/gdrive
+        # gdrive list
 
-        echo "Gdrive installed successfully."
+        # echo "Gdrive installed successfully."
+
+        echo "Please install 'gdrive' first"
+        exit 1
     fi
 
     if [[ -z $(command -v slacktee.sh) ]]; then
