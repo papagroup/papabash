@@ -1,5 +1,9 @@
 # Generate LetsEncrypt SSL with Nginx webserver
 
+```
+export SITE=awesomesite.com
+```
+
 - Generate dhparam pem file
 ```
 openssl dhparam -out /etc/nginx/ssl/dhparam-2048.pem 2048
@@ -35,7 +39,7 @@ mkdir -p /var/www/letsencrypt/.well-known/acme-challenge
 
 - (Optional) Creating testing file:
 ```
-echo 'Testing' > /var/www/letsencrypt/.well-known/acme-challenge/test.html
+echo 'Testing' > /etc/nginx/certbot/.well-known/acme-challenge/test.html
 ```
 
 - (Optional) Then go to /.well-known/acme-challenge/test.html to see if the page works.
@@ -44,18 +48,17 @@ If got 403 (nginx), the permissions of the folder .well-known should be checked.
 ### Generate certificates
 
 ```
-certbot certonly --rsa-key-size 4096 \
+sudo certbot certonly --rsa-key-size 4096 \
 	--webroot \
-	-w /var/www/letsencrypt/ \
-	--work-dir /var/www/letsencrypt/ \
-	--config-dir /etc/nginx/ssl/ \
+	-w /etc/nginx/certbot/ \
+	--work-dir /etc/nginx/certbot/ \
+	--config-dir /etc/nginx/certbot/certs \
 	--logs-dir /var/log/letsencrypt/ \
 	--agree-tos \
 	--no-eff-email \
 	--force-renew \
 	--email papagroup.net@gmail.com \
-	-d awesomesite.com \
-	-d www.awesomesite.com \
+	-d $SITE \
 	--debug \
 	--dry-run
 ```

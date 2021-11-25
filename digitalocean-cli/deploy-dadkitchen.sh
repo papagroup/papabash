@@ -119,6 +119,13 @@ ssh-add ~/.ssh/id_rsa_papagroup_gitlab_readonly
 # Check ssh connection to Gitlab
 ssh -T git@gitlab.com
 
+# Add key permanently
+# /etc/ssh/ssh_config
+# ----
+# Host gitlab.com
+#     IdentityFile ~/.ssh/id_rsa_papagroup_gitlab_readonly
+# ----
+
 git clone git@gitlab.com:papagroup/longban-web-saleor.git /home/longban
 
 # Get papabash
